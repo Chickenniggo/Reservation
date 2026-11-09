@@ -13,8 +13,8 @@ public sealed class PostgresReservationStore(NpgsqlDataSource dataSource) : IRes
             SELECT {Columns} FROM reservations
             WHERE (@deleted OR deleted_at IS NULL)
               AND (@room IS NULL OR room_id = @room)
-              AND (@before IS NULL OR "from" <= @before)
-              AND (@after IS NULL OR "to" >= @after)
+              AND (@before IS NULL OR "from" < @before)
+              AND (@after IS NULL OR "to" > @after)
             ORDER BY "from", id
             """);
         command.Parameters.AddWithValue("deleted", filter.IncludeDeleted);

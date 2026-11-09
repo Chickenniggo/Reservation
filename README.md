@@ -21,7 +21,7 @@ The assignment uses reservations API **4.0.0**. Public endpoints are read-only; 
 - `deploy`: Overlay replacing the reservations deployment in the supplied environment.
 - `scripts`: Verification and submission packaging.
 
-Dates are calendar dates. Intervals are half-open: adjacent bookings do not conflict. List filters include equal boundary dates, per specification.
+Dates are calendar dates. Intervals are half-open: adjacent bookings do not conflict. List filters use `from < before` and `to > after`; equal boundary dates are excluded.
 Public reads never expose deleted records. Protected reads can include them with `include_deleted=true`.
 PUT creates missing IDs, replaces active reservations or restores deleted ones with explicit `deleted_at: null`.
 DELETE soft-deletes by default; `permanent=true` removes the record. ETags change on every modification.
@@ -141,7 +141,7 @@ Pull requests build and test without publishing. Registry authentication uses th
 Test reports and cluster logs are available as `test-results` and `cluster-integration` artifacts in the Actions run.
 GHCR packages may initially be private; their visibility must be set separately before an unauthenticated deployment can pull them.
 
-The pinned upstream test harness misses the v4 URL and v4 schema directory. `scripts/prepare-httpyac.cjs` adds these two configuration entries;
+`scripts/prepare-httpyac.cjs` ensures the upstream test harness includes the v4 URL and v4 schema directory, adding missing entries only;
 it does not alter the test assertions. The API contract and test revision are linked above.
 
 ## Submission

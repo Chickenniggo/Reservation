@@ -140,7 +140,7 @@ public sealed class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [PostgresFact]
-    public async Task AdjacentReservationsAndInclusiveFiltersWork()
+    public async Task AdjacentReservationsAndExclusiveFiltersWork()
     {
         using var client = AuthenticatedClient();
         var room = Guid.NewGuid();
@@ -148,9 +148,19 @@ public sealed class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         using var adjacent = await client.PostAsJsonAsync($"{Root}/reservations", new { name = "Second reservation", from = "2026-11-03", to = "2026-11-05", room_id = room });
         Assert.Equal(HttpStatusCode.Created, first.StatusCode);
         Assert.Equal(HttpStatusCode.Created, adjacent.StatusCode);
-        using var filtered = await client.GetAsync($"{Root}/public-reservations?room_id={room}&before=2026-11-01&after=2026-11-03");
-        using var document = JsonDocument.Parse(await filtered.Content.ReadAsStringAsync());
-        Assert.Single(document.RootElement.GetProperty("reservations").EnumerateArray());
+        foreach (var (query, expectedCount) in new[]
+        {
+            ("before=2026-11-01", 0),
+            ("after=2026-11-05", 0),
+            ("before=2026-11-03&after=2026-11-01", 1),
+            ("before=2026-11-05&after=2026-11-03", 1)
+        })
+        {
+            using var filtered = await client.GetAsync($"{Root}/public-reservations?room_id={room}&{query}");
+            Assert.Equal(HttpStatusCode.OK, filtered.StatusCode);
+            using var document = JsonDocument.Parse(await filtered.Content.ReadAsStringAsync());
+            Assert.Equal(expectedCount, document.RootElement.GetProperty("reservations").GetArrayLength());
+        }
     }
 
     [PostgresFact]
