@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+artifacts/
+abgabe/
+.env
+.env.*
+!.env.example
+Aufgabenstellung*.pdf
+*.user
+*.suo

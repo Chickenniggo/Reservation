@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservations
+spec:
+  template:
+    spec:
+      containers:
+        - name: reservations
+          image: reservations-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - $patch: replace
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: Jwt__Authority
+              value: http://localhost:9090/auth/realms/biletado
+            - name: Jwt__Issuer
+              value: http://localhost:9090/auth/realms/biletado
+            - name: Jwt__JwksUri
+              value: http://keycloak/auth/realms/biletado/protocol/openid-connect/certs
+            - name: Jwt__RequireHttpsMetadata
+              value: "false"
+            - name: Jwt__Audience
+              value: account
+          startupProbe:
+            httpGet:
+              path: /api/v4/reservations/health/live
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/v4/reservations/health/live
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/v4/reservations/health/ready
+              port: http
+            periodSeconds: 10
