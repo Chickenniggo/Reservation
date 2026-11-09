@@ -14,10 +14,13 @@ try {
         New-Item -ItemType Directory -Path (Split-Path $destination) -Force | Out-Null
         Copy-Item -LiteralPath $_.FullName -Destination $destination
     }
-    $results = Join-Path $root 'artifacts/test-results/integration.trx'
-    if (Test-Path $results) {
-        New-Item -ItemType Directory -Path (Join-Path $staging 'test-results') -Force | Out-Null
-        Copy-Item $results (Join-Path $staging 'test-results/integration.trx')
+    foreach ($report in @('artifacts/test-results/integration.trx', 'artifacts/cluster/httpyac.xml')) {
+        $results = Join-Path $root $report
+        if (Test-Path $results) {
+            $reportDirectory = Join-Path $staging 'test-results'
+            New-Item -ItemType Directory -Path $reportDirectory -Force | Out-Null
+            Copy-Item -LiteralPath $results -Destination (Join-Path $reportDirectory (Split-Path $results -Leaf))
+        }
     }
     $archive = Join-Path $output 'programmentwurf.zip'
     Add-Type -AssemblyName System.IO.Compression.FileSystem

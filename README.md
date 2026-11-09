@@ -144,6 +144,10 @@ GHCR packages may initially be private; their visibility must be set separately 
 `scripts/prepare-httpyac.cjs` ensures the upstream test harness includes the v4 URL and v4 schema directory, adding missing entries only;
 it does not alter the test assertions. The API contract and test revision are linked above.
 
+Verified on 2026-11-09 for commit `82de638`: 42 own tests without skips and 895 official v4 assertions passed.
+The container ran as non-root without an SDK; the supplied environment started successfully with real Keycloak, assets and PostgreSQL.
+The [Actions run](https://github.com/Chickenniggo/Reservation/actions/runs/42602282595) also published the image to GHCR. Anonymous image access was checked.
+
 ## Submission
 
 ```powershell
@@ -151,7 +155,7 @@ it does not alter the test assertions. The API contract and test revision are li
 ```
 
 Output: `abgabe/programmentwurf.zip`. The already submitted questionnaire is kept unchanged.
-The archive contains source, lockfiles, tests, configuration, container/deployment files, documentation, license and latest test report if present.
+The archive contains source, lockfiles, tests, configuration, container/deployment files, documentation, license and downloaded test reports if present (`integration.trx`, `httpyac.xml`).
 It excludes build output, local secrets, the assignment PDF and previous archives.
 For an OCI image archive: `podman save --format oci-archive -o reservations-api.tar reservations-api:local`.
 
