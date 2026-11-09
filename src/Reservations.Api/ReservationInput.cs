@@ -25,7 +25,7 @@ public sealed record ReservationInput
         if (Name is null || !Regex.IsMatch(Name, $@"\A{word}( {word})*\z", RegexOptions.None, TimeSpan.FromSeconds(1))
             || RoomId == Guid.Empty || From == default || To == default
             || (Comment is not null && (Comment.Length > 2048
-                || !Regex.IsMatch(Comment, $@"\A({word}( {word})*\n?)*\z", RegexOptions.None, TimeSpan.FromSeconds(1))))
+                || !Regex.IsMatch(Comment, $@"\A({word}( {word})*\n?)*\z", RegexOptions.NonBacktracking, TimeSpan.FromSeconds(1))))
             || (DeletedAt.ValueKind != JsonValueKind.Undefined && (!replacement || !Restore)))
         {
             throw new ApiException(400, "schema_violation", "The request does not match the reservation schema.");

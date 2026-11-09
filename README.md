@@ -83,7 +83,7 @@ Environment variables override appsettings files. Use `__` for nested keys.
 |---|---|
 | `ASPNETCORE_HTTP_PORTS` | Container: `8080` |
 | `ASPNETCORE_ENVIRONMENT` | `Development` enables the local HTTP IAM configuration |
-| `ConnectionStrings__Reservations` | Optional full Npgsql connection string; overrides individual database settings |
+| `ConnectionStrings__Reservations` | Optional full Npgsql connection string; overrides individual database settings. Missing `Max Auto Prepare` defaults to `20`; an explicit value is preserved (`0` disables preparation). |
 | `POSTGRES_RESERVATIONS_HOST` | `localhost`; supplied deployment sets `postgres` |
 | `POSTGRES_RESERVATIONS_PORT` | `5432` |
 | `POSTGRES_RESERVATIONS_DBNAME` | `reservations_v4` |

@@ -62,7 +62,12 @@ var connectionString = builder.Configuration.GetConnectionString("Reservations")
 	Timeout = 5,
 	CommandTimeout = 10
 }.ConnectionString;
-builder.Services.AddSingleton(NpgsqlDataSource.Create(connectionString));
+var connectionSettings = new NpgsqlConnectionStringBuilder(connectionString);
+if (!connectionSettings.ShouldSerialize("Max Auto Prepare"))
+{
+	connectionSettings.MaxAutoPrepare = 20;
+}
+builder.Services.AddSingleton(NpgsqlDataSource.Create(connectionSettings.ConnectionString));
 builder.Services.AddSingleton<IReservationStore, PostgresReservationStore>();
 builder.Services.AddHttpClient<IAssetsClient, AssetsClient>(client =>
 {

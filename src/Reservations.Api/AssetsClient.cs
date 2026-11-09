@@ -42,7 +42,8 @@ public sealed class AssetsClient(HttpClient httpClient) : IAssetsClient
                 return false;
             }
             using var document = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
-            return document.RootElement.TryGetProperty("live", out var live) && live.ValueKind == JsonValueKind.True;
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("live", out var live) && live.ValueKind == JsonValueKind.True;
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException || exception is OperationCanceledException && !cancellationToken.IsCancellationRequested)
         {

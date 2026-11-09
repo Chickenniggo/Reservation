@@ -40,4 +40,22 @@ public sealed class ReservationInputTests
     {
         Assert.Throws<ApiException>(() => (ValidInput with { RoomId = Guid.Empty }).Validate());
     }
+
+    [Theory]
+    [InlineData(60)]
+    [InlineData(2047)]
+    public void InvalidCommentDoesNotCauseRegexTimeout(int length)
+    {
+        var input = ValidInput with { Comment = new string('a', length) + "!" };
+        Assert.Equal(400, Assert.Throws<ApiException>(() => input.Validate()).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("First line\nSecond line\n")]
+    [InlineData("First line\nSecond line")]
+    public void ValidCommentIsAccepted(string comment)
+    {
+        (ValidInput with { Comment = comment }).Validate();
+    }
 }

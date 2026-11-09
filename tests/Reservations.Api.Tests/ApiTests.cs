@@ -3,6 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Xunit;
 
 namespace Reservations.Api.Tests;
@@ -10,6 +13,21 @@ namespace Reservations.Api.Tests;
 public sealed class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
 {
     private const string Root = "/api/v4/reservations";
+
+    [Theory]
+    [InlineData("", 20)]
+    [InlineData("Max Auto Prepare=7", 7)]
+    [InlineData("Max Auto Prepare=0", 0)]
+    public void CustomConnectionStringDefaultsToAutomaticPreparationUnlessExplicitlyConfigured(string setting, int expected)
+    {
+        using var configuredFactory = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseSetting("Database:Initialize", "false");
+            builder.UseSetting("ConnectionStrings:Reservations", $"Host=localhost;Database=unused_test;Username=test;{setting}");
+        });
+        var dataSource = configuredFactory.Services.GetRequiredService<NpgsqlDataSource>();
+        Assert.Equal(expected, new NpgsqlConnectionStringBuilder(dataSource.ConnectionString).MaxAutoPrepare);
+    }
 
     [Theory]
     [InlineData("/status")]
@@ -81,6 +99,23 @@ public sealed class ApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal(code, body.RootElement.GetProperty("errors")[0].GetProperty("code").GetString());
+    }
+
+    [Theory]
+    [InlineData(60)]
+    [InlineData(2047)]
+    public async Task InvalidCommentProducesBadRequest(int length)
+    {
+        using var client = AuthenticatedClient();
+        var payload = Payload(Guid.NewGuid());
+        using var response = await client.PostAsJsonAsync($"{Root}/reservations", new
+        {
+            payload.name, payload.from, payload.to, payload.room_id,
+            comment = new string('a', length) + "!"
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("schema_violation", body.RootElement.GetProperty("errors")[0].GetProperty("code").GetString());
     }
 
     [PostgresFact]

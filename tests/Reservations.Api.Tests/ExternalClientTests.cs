@@ -40,6 +40,10 @@ public sealed class ExternalClientTests
     [InlineData("{\"live\":false}", false)]
     [InlineData("{}", false)]
     [InlineData("invalid-json", false)]
+    [InlineData("[]", false)]
+    [InlineData("null", false)]
+    [InlineData("true", false)]
+    [InlineData("\"healthy\"", false)]
     public async Task AssetsReadinessUsesLivenessNotRecursiveReadiness(string body, bool expected)
     {
         using var handler = new StubHandler(request =>
